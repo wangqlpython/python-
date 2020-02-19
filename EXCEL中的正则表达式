@@ -1,0 +1,34 @@
+http://www.360doc.com/content/18/1130/11/30583536_798317783.shtml  指导网址
+可批量的函数:很有用
+Sub re()
+Application.ScreenUpdating = False
+Dim re As String
+Set oRegExp1 = CreateObject("vbscript.regexp")
+re = InputBox("请输入正则表达式")
+If re = "" Then Exit Sub
+With oRegExp1
+    .Global = True
+    .IgnoreCase = True
+    .Pattern = re
+End With
+ 
+For Each Rng In Selection
+    If Rng <> "" Then
+        Set a = oRegExp1.Execute(Rng)
+        For j = 0 To a.Count - 1
+        If j = 0 Then
+            b = a(j)
+        Else
+                b = b & "," & a(j)
+        End If
+        Next
+        Rng.Value = b
+        b = ""
+    End If
+Next
+Application.ScreenUpdating = True
+End Sub
+
+单个函数：
+function getphone(rng as range)
+with createobject("vbscript.re")
