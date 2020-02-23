@@ -26,5 +26,5 @@ def swap(arr, i, j):
 
 
 if __name__ == "__main__":
-    str1 = [10, 9, 3, 7, 5, 6, 4, 8]
+    str1 = [6, 1, 2, 7, 9, 3, 4, 5, 10, 8]
     print(quickSort(str1))
