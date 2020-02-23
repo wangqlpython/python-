@@ -1,3 +1,4 @@
+import time
 def quickSort(arr, left=None, right=None):
     left = 0 if not isinstance(left, (int, float)) else left
     right = len(arr) - 1 if not isinstance(right, (int, float)) else right
@@ -26,5 +27,7 @@ def swap(arr, i, j):
 
 
 if __name__ == "__main__":
+    start = time.time()
     str1 = [6, 1, 2, 7, 9, 3, 4, 5, 10, 8]
     print(quickSort(str1))
+    print(time.time()-start)

@@ -1,3 +1,4 @@
+import time
 def RadixSort(list):
     i = 0  # 初始为个位排序
     n = 1  # 最小的位数置为1（包含0）
@@ -22,5 +23,7 @@ def RadixSort(list):
     return list
 
 if __name__ == "__main__":
-    str1 = [6, 1, 25, 7, 9, 35, 4, 5, 10, 8]
+    start = time.time()
+    str1 = [6, 1, 35, 7, 9, 25, 4, 15, 5, 8]
     print(RadixSort(str1))
+    print(time.time() - start)
