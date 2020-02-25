@@ -1,8 +1,16 @@
 import sklearn
+import numpy as np
 import jieba
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.decomposition import PCA
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.datasets import load_iris,fetch_20newsgroups,load_boston
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+
 
 
 def cutword():
@@ -73,9 +81,60 @@ def stand():
     return None
 
 
+def pca():
+    pca = PCA(n_components=0.9)
+    list_data = [[2, 8, 4, 5], [6, 3, 0, 8], [5, 4, 9, 1]]
+    data = pca.fit_transform(list_data)
+    print(data)
+    return None
+
+
+def im():
+    im = SimpleImputer(missing_values=np.nan, strategy="mean")
+    list_data = [[1, 2], [np.nan, 3], [7, 6]]
+    data = im.fit_transform(list_data)
+    print(data)
+    return None
+
+
+def var():
+    var = VarianceThreshold(threshold=0.5)  # 设定方差范围
+    list_data = [[0, 2, 0, 3], [0, 1, 4, 3], [0, 1, 1, 3]]
+    data = var.fit_transform(list_data)
+    print(data)
+    return None
+
+
+def flower():
+    li = load_iris()
+    # print(li.data)
+    # print("*"*20)
+    # print(li.target)
+    # print("*" * 20)
+    # print(li.DESCR)
+    x_train, x_test, y_train, y_test = train_test_split(
+        li.data, li.target, test_size=0.25
+    )
+    print("训练特征和目标：\n", x_train, "\n目标\n", y_train)
+    print("测试特征和目标：\n", x_test,  "\n目标\n", y_test)
+    return None
+
+def big_data():
+    # news=fetch_20newsgroups(subset="all")
+    # print(news.data)
+    lb=load_boston()
+    print(lb.data)
+    print(lb.target)
+
+
 if __name__ == "__main__":
     # hanzi()
     # dictvec()
     # tfidfvec()
     # mm()
-    stand()
+    # stand()
+    # im()
+    # pca()
+    # var()
+    # flower()
+    big_data()
