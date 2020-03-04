@@ -1,0 +1,42 @@
+Sub SplitRow(i As Integer)
+  Dim dst_book As Object
+  Dim dst_sh As Object
+  Dim k
+  Dim fpath
+ 
+  Set dst_book = Workbooks.Add  '新增一个工作簿
+  Set dst_sh = dst_book.Sheets(1) '新增一张表
+  dst_sh.Name = Cells(i, 3).Value
+ 
+  Rows("1:3").Copy dst_sh.Range("a1")   '三行表头
+  Rows(i).Copy dst_sh.Rows(4)   '一行数据
+  
+  k = ThisWorkbook.path
+  fpath = k & "\" & Cells(i, 2).Value & "\"
+  If Dir(fpath, vbDirectory) = "" Then  '如果文件不存在
+     MkDir fpath
+  End If
+  dst_book.SaveAs fpath & Cells(i, 4).Value & ".xlsx" '
+  dst_book.Close
+  Set dst_sh = Nothing
+  Set dst_book = Nothing
+End Sub
+
+
+Sub SplitAll()
+  Application.ScreenUpdating = False
+  Application.DisplayAlerts = False
+  Dim i As Integer
+  Dim n As Integer
+  Dim path
+  path = ThisWorkbook.path
+  n = Range("A65536").End(xlUp).Row
+ 
+  For i = 4 To n
+    If Cells(i, 1).Value <> "" Then   '对于每行数据，如果其第1个单元格不为空白，则进行导出
+      SplitRow (i)                '总表中每行第1个单元格数据为“工号”，如果把这个人的“工号”删掉，则不会导出他的数据
+    End If
+  Next i
+Application.DisplayAlerts = True
+Application.ScreenUpdating = True
+End Sub
