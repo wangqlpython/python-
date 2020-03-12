@@ -1,0 +1,126 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import pandas as pd
+import numpy as np
+from scipy.linalg import solve
+from itertools import islice
+from matplotlib import pyplot as plt
+plt.rcParams['font.sans-serif'] = ['SimHei']  # 表示可以显示中文
+plt.rcParams['axes.unicode_minus'] = False  # 表示可以正常显示正负号
+#自动生成序例函数
+def num_label(min_x,max_x,d):
+    max_num = max_x + d*2
+    num_label = list(range(min_x, max_num, d))
+    xu_label = []
+    for i in range(len(num_label)):
+        if i < (len(num_label) - 1):
+            temp = "%d-%d" % (num_label[i], num_label[i + 1] - 1)
+            xu_label.append(temp)
+    # print(xu_label)
+    return xu_label
+
+def near_number(x, lst):
+    def jie(x1, y1, x2, y2, p):
+        a = np.array([[x1, 1], [x2, 1]])
+        b = np.array([y1, y2])
+        k1, b1 = solve(a, b)
+        return (p - b1) / k1
+    for l1, l2 in zip(lst, islice(lst, 1, None)):
+        if l1 <= x <= l2:
+            # print(lst.index(l1),l1,lst.index(l2),l2,0.8)
+            return jie(lst.index(l1),l1,lst.index(l2),l2,0.8)
+
+def wz(x,lst):
+    for l1, l2 in zip(lst, islice(lst, 1, None)):
+        if l1 <= x <= l2:
+            return lst.index(l1)+(x-l1)/(l2-l1)-0.5
+
+df = pd.read_excel("ky.xls", sheet_name="总表")
+# print(df.columns)
+df1 = df.groupby(["经销商编号"])["VIN"].count().reset_index(name="销量")
+d = 5
+max_d = max(df1["销量"])
+min_d = min(df1["销量"])
+num_bins = list(range(min_d,max_d+d+d,d))
+# print(num_bins)
+label1= num_label(min_d,max_d,d)
+df1["台阶"] = pd.cut(df1["销量"],num_bins,labels=label1,right=False)
+# df1.loc[[38,52],"台阶"]=["41-45","61-66"]
+# print(df1.loc[52,"台阶"])
+# df1.to_excel("a123.xlsx")
+#各阶求和
+df2 =df1.groupby(["台阶"])["销量"].sum().reset_index(name="累销")
+#各阶计数
+df3 =df1.groupby(["台阶"])["销量"].count().reset_index(name="计数")
+# print(df3)
+# df2.sort_values(by="累销",inplace=True,ascending=False)
+data = df2["累销"]
+data2 = df3["计数"]
+len1 = len(data)
+#计算占比
+p = data.cumsum()/data.sum()
+p2 = data2.cumsum()/data2.sum()
+list_1 =list(p)
+x_local =near_number(0.8,list_1)#查找0.8时X座标的位置
+
+figsize=20,8
+fig,ax1= plt.subplots(figsize=figsize,dpi=100)
+#画第一个柱形图
+ax1.bar(range(len1),data,label="累计销量")
+x1=range(len1)
+y1=data
+for a, b in zip(x1, y1):
+    ax1.text(a, b+1, "%d"%int(b), ha='center', va='bottom')
+#画第二个柱图
+ax1.bar(range(len1),data2,color="orange",alpha=1,label="台阶商家数")
+# 设置数字标签
+x4 = x1
+y4 = data2
+for x4, y4 in zip(x4, y4):
+    ax1.text(x4,y4+0.1,"%d"%int(y4) ,ha='center', va='bottom')
+#画第三个累销占比图
+ax2 = ax1.twinx()
+x2 = range(len1)
+ax2.plot(x2,p,"c*-",color="r",linewidth=3,label="累销占比")
+x3=x1
+y3=p
+for x3, y3 in zip(x3, y3):
+    ax2.text(x3,y3+0.015,"%.2f%%"%float(y3*100) ,ha='center', va='bottom')
+#画第四个计数占比图
+ax2.plot(x2,p2,"c*-",color="orange",linewidth=3,label="商家占比")
+x5 = x2
+y5 = p2
+for x5, y5 in zip(x5, y5):
+    ax2.text(x5,y5+0.015,"%.2f%%"%float(y5*100) ,ha='center', va='bottom')
+#坐标设置
+_x = range(len1)
+label2=list(df2["台阶"])
+plt.xticks(_x,label2)
+#坐标设置
+max_zhuobiao=df2["累销"].max()+ 50
+ax1.set_ylim([0,max_zhuobiao])
+ax1.set_yticks(range(0,max_zhuobiao,25))
+ax2.set_ylim([0,1.1])
+b1=[i/100 for i in range(0,110,10)]
+b2=["0%","10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"]
+#坐标先设置坐标，再设置标签
+ax2.set_yticks(b1)
+ax2.set_yticklabels(b2)
+#第三个图标线
+ax2.axvline(x_local,0,0.73,c="r",ls="--",lw=2)
+ax2.scatter(x_local,0.8,marker="*",s=200,c="b")
+jun_x = data.sum()/data2.sum() #均线位置
+jun_local = wz(jun_x,num_bins)
+jun_y = 0.8 #均线高度
+ax2.axvline(jun_local,0,1,c="b",ls="--",lw=2)
+ax2.text(jun_local,1, "<%.2f台/均商家" % jun_x, ha='right', va='bottom')
+ax2.grid()
+plt.title("帕累托图：总商家数：%d,总销量：%d"%(data2.sum(),data.sum()))
+ax1.set_xlabel("销量台阶")
+ax1.set_ylabel("商家数")
+ax2.set_ylabel("累计占比")
+ax1.legend(loc="upper right",bbox_to_anchor=(0.83,1),ncol=2,fancybox=True,shadow=True)
+ax2.legend(loc="upper right",bbox_to_anchor=(0.99,1),ncol=2,fancybox=True,shadow=True)
+plt.savefig("销量图.jpg")
+plt.show()
+
